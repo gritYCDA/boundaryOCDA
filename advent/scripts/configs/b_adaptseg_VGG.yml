@@ -1,0 +1,16 @@
+SOURCE: GTA
+TARGET: BDD
+NUM_WORKERS: 4
+TRAIN:
+  OCDA_METHOD: attn_boundary # advanced test version -> ad_boundary, attn_boundary
+  DA_METHOD: AdapSeg
+  MODEL: DeepLabv2_VGG
+  OPTION: catOutD # [ twinD , segOnlyD ,  catOutD]
+  MULTI_LEVEL: False
+  LAMBDA_ADV_MAIN: 0.01
+  LAMBDA_ADV_AUX: 0.0002
+  LAMBDA_ADV_BOUNDARY: 0.0002 # each discriminator
+  LAMBDA_BOUNDARY: 0.5
+  BOUNDARY_LOSS: BCE  #  [ "BCE", "DICE", "BCE+DICE" ]
+TEST:
+  MODE: best

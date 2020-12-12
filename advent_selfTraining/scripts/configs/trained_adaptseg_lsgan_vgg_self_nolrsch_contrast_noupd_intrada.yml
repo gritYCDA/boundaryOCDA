@@ -1,0 +1,16 @@
+SOURCE: GTA
+TARGET: Cityscapes_lrsch_contrast_2k_update_3dis_newmodel
+NUM_WORKERS: 4
+TRAIN:
+  DA_METHOD: SelfSelf
+  MODEL: DeepLabv2_VGG
+  MULTI_LEVEL: False
+  SELF_TRAINING: True
+  RESTORE_FROM_SELF: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/experiments/snapshots/GTA2Cityscapes_trained_DeepLabv2_VGG_AdaptSeg
+  SHUFFLE: False
+  # MAX_ITERS: 20000
+  LAMBDA_ADV_MAIN: 0.01
+  LAMBDA_ADV_AUX: 0.0002
+  # LEARNING_RATE: 0.0001
+TEST:
+  MODE: best

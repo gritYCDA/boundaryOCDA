@@ -1,5 +1,7 @@
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 from advent.dataset.base_dataset import BaseDataset
 
 
@@ -13,6 +15,28 @@ class GTA5DataSet(BaseDataset):
                               19: 6, 20: 7, 21: 8, 22: 9, 23: 10, 24: 11, 25: 12,
                               26: 13, 27: 14, 28: 15, 31: 16, 32: 17, 33: 18}
 
+        self.id_to_things = {
+                             7: 0,
+                             8: 1,
+                             # 11: 2,
+                             # 12: 3,
+                             # 13: 4,
+                             # 17: 5,
+                             # 19: 6,
+                             # 20: 7,
+                             # 21: 8,
+                             # 22: 9,
+                             # 23: 10, #
+                             24: 11,
+                             25: 12,
+                             26: 13,
+                             27: 14,
+                             28: 15,
+                             31: 16,
+                             32: 17,
+                             33: 18
+        }
+
     def get_metadata(self, name):
         img_file = self.root / 'images' / name
         label_file = self.root / 'labels' / name
@@ -24,7 +48,19 @@ class GTA5DataSet(BaseDataset):
         label = self.get_labels(label_file)
         # re-assign labels to match the format of Cityscapes
         label_copy = 255 * np.ones(label.shape, dtype=np.float32)
+        # label_copy_visual = np.zeros(label.shape, dtype=np.float32)
         for k, v in self.id_to_trainid.items():
             label_copy[label == k] = v
+            # label_copy_visual[label == k] = v
+
+        label_things = 255 * np.ones(label.shape, dtype=np.float32)
+        # label_things_visual = np.zeros(label.shape, dtype=np.float32)
+        for k, v in self.id_to_things.items():
+            label_things[label == k] = v
+            # label_things_visual[label == k] = v
+
+        # plt.imsave("./gt/" + name.split('.')[0]+"Label.png", label_copy_visual)
+        # plt.imsave("./gt/" + name.split('.')[0] +"Things.png", label_things_visual)
+
         image = self.preprocess(image)
-        return image.copy(), label_copy.copy(), np.array(image.shape), name
+        return image.copy(), label_copy.copy(), np.array(image.shape), name, label_things.copy()

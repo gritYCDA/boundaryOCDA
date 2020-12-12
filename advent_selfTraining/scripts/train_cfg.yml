@@ -1,0 +1,205 @@
+!!python/object/new:easydict.EasyDict
+dictitems:
+  DATA_DIRECTORY_SOURCE: /media/user/cce7e2c9-8e98-4a23-9dcd-45a1cb9902c2/inkyu/ADVENT/data/GTA5
+  DATA_DIRECTORY_TARGET: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/GDWCT_Folder/BASELINE/ADVENT/data/Compound
+  DATA_DIRECTORY_TARGET2: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/GDWCT_Folder/BASELINE/ADVENT/data/Compound_aug1
+  DATA_DIRECTORY_TARGET3: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/GDWCT_Folder/BASELINE/ADVENT/data/Compound_aug2
+  DATA_LIST_SOURCE: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/advent/dataset/gta5_list/{}.txt
+  DATA_LIST_TARGET: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/advent/dataset/compound_list/{}.txt
+  DATA_LIST_TARGET_ORDER: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/advent/dataset/compound_order/{}.txt
+  EXP_NAME: GTA2Cityscapes_trained_DeepLabv2_VGG_AdaptSeg
+  EXP_ROOT: &id013 !!python/object/apply:pathlib.PosixPath
+  - /
+  - media
+  - user
+  - a9755522-b17e-4bde-96f6-088bbbc3a1401
+  - OCDA
+  - ADVENT
+  - experiments
+  EXP_ROOT_LOGS: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/experiments/logs
+  EXP_ROOT_SNAPSHOT: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/experiments/snapshots
+  GPU_ID: 0
+  NUM_CLASSES: 19
+  NUM_WORKERS: 4
+  SOURCE: GTA
+  TARGET: Cityscapes_trained
+  TEST: &id014 !!python/object/new:easydict.EasyDict
+    dictitems:
+      BATCH_SIZE_TARGET: 1
+      IMG_MEAN: &id001 !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - &id008 !!python/name:numpy.ndarray ''
+        - !!python/tuple
+          - 0
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple
+          - 3
+        - &id009 !!python/object/apply:numpy.dtype
+          args:
+          - f4
+          - false
+          - true
+          state: !!python/tuple
+          - 3
+          - <
+          - null
+          - null
+          - null
+          - -1
+          - -1
+          - 0
+        - false
+        - !!binary |
+          lAPQQmlW6UKbW/VC
+      INFO_TARGET: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/advent/dataset/cityscapes_list/info.json
+      INPUT_SIZE_TARGET: &id002
+      - 960
+      - 540
+      MODE: best
+      MODEL: &id003
+      - DeepLabv2_VGG
+      MODEL_WEIGHT: &id004
+      - 1.0
+      MULTI_LEVEL: &id005
+      - true
+      OUTPUT_SIZE_TARGET: &id006
+      - 1280
+      - 720
+      RESTORE_FROM: &id007
+      - ''
+      SET_TARGET: val
+      SNAPSHOT_DIR: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/experiments/snapshots/GTA2Cityscapes_trained_DeepLabv2_VGG_AdaptSeg
+      SNAPSHOT_MAXITER: 120000
+      SNAPSHOT_STEP: 2000
+      WAIT_MODEL: true
+    state:
+      BATCH_SIZE_TARGET: 1
+      IMG_MEAN: *id001
+      INFO_TARGET: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/advent/dataset/cityscapes_list/info.json
+      INPUT_SIZE_TARGET: *id002
+      MODE: best
+      MODEL: *id003
+      MODEL_WEIGHT: *id004
+      MULTI_LEVEL: *id005
+      OUTPUT_SIZE_TARGET: *id006
+      RESTORE_FROM: *id007
+      SET_TARGET: val
+      SNAPSHOT_DIR: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/experiments/snapshots/GTA2Cityscapes_trained_DeepLabv2_VGG_AdaptSeg
+      SNAPSHOT_MAXITER: 120000
+      SNAPSHOT_STEP: 2000
+      WAIT_MODEL: true
+  TRAIN: &id015 !!python/object/new:easydict.EasyDict
+    dictitems:
+      BATCH_SIZE_SOURCE: 1
+      BATCH_SIZE_TARGET: 1
+      DA_METHOD: AdaptSeg
+      EARLY_STOP: 120000
+      IGNORE_LABEL: 255
+      IMG_MEAN: &id010 !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id008
+        - !!python/tuple
+          - 0
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple
+          - 3
+        - *id009
+        - false
+        - !!binary |
+          lAPQQmlW6UKbW/VC
+      INFO_SOURCE: ''
+      INFO_TARGET: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/advent/dataset/cityscapes_list/info.json
+      INPUT_SIZE_SOURCE: &id011
+      - 1280
+      - 720
+      INPUT_SIZE_TARGET: &id012
+      - 960
+      - 540
+      LAMBDA_ADV_AUX: 0.0002
+      LAMBDA_ADV_MAIN: 0.001
+      LAMBDA_ENT_AUX: 0.0002
+      LAMBDA_ENT_MAIN: 0.001
+      LAMBDA_SEG_AUX: 0.1
+      LAMBDA_SEG_MAIN: 1.0
+      LEARNING_RATE: 0.0001
+      LEARNING_RATE_D: 0.0001
+      MAX_ITERS: 250000
+      MODEL: DeepLabv2_VGG
+      MOMENTUM: 0.9
+      MULTI_LEVEL: false
+      POWER: 0.9
+      RANDOM_SEED: 1234
+      RESTORE_FROM: ''
+      RESTORE_FROM_SELF: ''
+      SAVE_PRED_EVERY: 2000
+      SELF_TRAINING: false
+      SET_SOURCE: all
+      SET_TARGET: train
+      SHUFFLE: true
+      SNAPSHOT_DIR: ''
+      TENSORBOARD_LOGDIR: ''
+      TENSORBOARD_VIZRATE: 100
+      WEIGHT_DECAY: 0.0005
+    state:
+      BATCH_SIZE_SOURCE: 1
+      BATCH_SIZE_TARGET: 1
+      DA_METHOD: AdaptSeg
+      EARLY_STOP: 120000
+      IGNORE_LABEL: 255
+      IMG_MEAN: *id010
+      INFO_SOURCE: ''
+      INFO_TARGET: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/advent/dataset/cityscapes_list/info.json
+      INPUT_SIZE_SOURCE: *id011
+      INPUT_SIZE_TARGET: *id012
+      LAMBDA_ADV_AUX: 0.0002
+      LAMBDA_ADV_MAIN: 0.001
+      LAMBDA_ENT_AUX: 0.0002
+      LAMBDA_ENT_MAIN: 0.001
+      LAMBDA_SEG_AUX: 0.1
+      LAMBDA_SEG_MAIN: 1.0
+      LEARNING_RATE: 0.0001
+      LEARNING_RATE_D: 0.0001
+      MAX_ITERS: 250000
+      MODEL: DeepLabv2_VGG
+      MOMENTUM: 0.9
+      MULTI_LEVEL: false
+      POWER: 0.9
+      RANDOM_SEED: 1234
+      RESTORE_FROM: ''
+      RESTORE_FROM_SELF: ''
+      SAVE_PRED_EVERY: 2000
+      SELF_TRAINING: false
+      SET_SOURCE: all
+      SET_TARGET: train
+      SHUFFLE: true
+      SNAPSHOT_DIR: ''
+      TENSORBOARD_LOGDIR: ''
+      TENSORBOARD_VIZRATE: 100
+      WEIGHT_DECAY: 0.0005
+  TRAIN_VGG_PRE_MODEL: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/advent/pretrained_models/vgg_model.pth
+state:
+  DATA_DIRECTORY_SOURCE: /media/user/cce7e2c9-8e98-4a23-9dcd-45a1cb9902c2/inkyu/ADVENT/data/GTA5
+  DATA_DIRECTORY_TARGET: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/GDWCT_Folder/BASELINE/ADVENT/data/Compound
+  DATA_DIRECTORY_TARGET2: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/GDWCT_Folder/BASELINE/ADVENT/data/Compound_aug1
+  DATA_DIRECTORY_TARGET3: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/GDWCT_Folder/BASELINE/ADVENT/data/Compound_aug2
+  DATA_LIST_SOURCE: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/advent/dataset/gta5_list/{}.txt
+  DATA_LIST_TARGET: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/advent/dataset/compound_list/{}.txt
+  DATA_LIST_TARGET_ORDER: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/advent/dataset/compound_order/{}.txt
+  EXP_NAME: GTA2Cityscapes_trained_DeepLabv2_VGG_AdaptSeg
+  EXP_ROOT: *id013
+  EXP_ROOT_LOGS: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/experiments/logs
+  EXP_ROOT_SNAPSHOT: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/experiments/snapshots
+  GPU_ID: 0
+  NUM_CLASSES: 19
+  NUM_WORKERS: 4
+  SOURCE: GTA
+  TARGET: Cityscapes_trained
+  TEST: *id014
+  TRAIN: *id015
+  TRAIN_VGG_PRE_MODEL: /media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/OCDA/ADVENT/advent/pretrained_models/vgg_model.pth

@@ -1,0 +1,11 @@
+SOURCE: GTA
+TARGET: BDD
+NUM_WORKERS: 4
+TRAIN:
+  OCDA_METHOD: boundary
+  DA_METHOD: source_only
+  MODEL: DeepLabv2_VGG
+  LAMBDA_BOUNDARY: 0.5
+  BOUNDARY_LOSS: DICE  #  [ "BCE", "DICE", "BCE+DICE" ]
+TEST:
+  MODE: best

@@ -17,13 +17,20 @@ import torch
 from torch.utils import data
 
 from advent.model.deeplabv2 import get_deeplab_v2
+from advent.model.deeplabv2_vgg import get_deeplab_v2_vgg
+
 from advent.dataset.gta5 import GTA5DataSet
+from advent.dataset.bdd import BDDdataset
 from advent.dataset.cityscapes import CityscapesDataSet
 from advent.domain_adaptation.config import cfg, cfg_from_file
 from advent.domain_adaptation.train_UDA import train_domain_adaptation
 
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore")
+
+import sys
+sys.path.append("/data2/OCDA/ADVENT")
+from advent.utils import project_root
 
 
 def get_arguments():
@@ -41,6 +48,32 @@ def get_arguments():
                         help="visualize results.")
     parser.add_argument("--exp-suffix", type=str, default=None,
                         help="optional experiment suffix")
+    parser.add_argument("--num-workers", type=int, default=4,
+                        help="the number of dataloader workers")
+    parser.add_argument("--LAMBDA_BOUNDARY", type=float, default=0.5,
+                        help="cfg.TRAIN.LAMBDA_BOUNDARY")
+    parser.add_argument("--LAMBDA_DICE", type=float, default=1,
+                        help="cfg.TRAIN.LAMBDA_BOUNDARY")
+    """
+        gan method settings
+    """
+    parser.add_argument('--gan', type=str, default='lsgan',
+                        help='gan methods [gan, lsgan]')
+
+    """
+        dataset manager
+    """
+    parser.add_argument('--source', type=str, default='GTA',
+                        help='source dataset [GTA, SYNTHIA]')
+    parser.add_argument('--target', type=str, default='BDD',
+                        help='target dataset [Cityscapes, BDD]')
+
+    """
+        train opticn
+    """
+    parser.add_argument('--option', type=str, default=None,
+                        help='for the many trial, option tag can be divider')
+
     return parser.parse_args()
 
 
@@ -52,9 +85,65 @@ def main():
 
     assert args.cfg is not None, 'Missing cfg file'
     cfg_from_file(args.cfg)
+    cfg.NUM_WORKERS = args.num_workers
+    if args.option is not None:
+        cfg.TRAIN.OPTION = args.option
+    cfg.TRAIN.LAMBDA_BOUNDARY = args.LAMBDA_BOUNDARY
+    cfg.TRAIN.LAMBDA_DICE = args.LAMBDA_DICE
+
+    ## gan method settings
+    cfg.GAN = args.gan
+    if cfg.GAN == 'gan':
+        cfg.TRAIN.LAMBDA_ADV_MAIN = 0.001  # GAN
+    elif cfg.GAN == 'lsgan':
+        cfg.TRAIN.LAMBDA_ADV_MAIN = 0.01  # LS-GAN
+    else:
+        raise NotImplementedError(f"Not Supported gan method")
+
+    ### dataset settings
+    cfg.SOURCE = args.source
+    cfg.TARGET = args.target
+    ## source config
+    if cfg.SOURCE == 'GTA':
+        cfg.DATA_LIST_SOURCE = str(project_root / 'advent/dataset/gta5_list/{}.txt')
+        cfg.DATA_DIRECTORY_SOURCE = str(project_root / 'data/GTA5')
+        cfg.TRAIN.INPUT_SIZE_SOURCE = (1280, 720)
+
+    elif cfg.SOURCE == 'SYNTHIA':
+        raise NotImplementedError(f"Not yet supported {cfg.SOURCE} dataset")
+    else:
+        raise NotImplementedError(f"Not yet supported {cfg.SOURCE} dataset")
+
+    ## target config
+    if cfg.TARGET == 'Cityscapes':
+        cfg.DATA_LIST_TARGET = str(project_root / 'advent/dataset/cityscapes_list/{}.txt')
+        cfg.DATA_DIRECTORY_TARGET = str(project_root / 'data/cityscapes')
+        cfg.EXP_ROOT = project_root / 'experiments_G2C'
+        cfg.EXP_ROOT_SNAPSHOT = osp.join(cfg.EXP_ROOT, 'snapshots_G2C')
+        cfg.EXP_ROOT_LOGS = osp.join(cfg.EXP_ROOT, 'logs_G2C')
+        cfg.TRAIN.INPUT_SIZE_TARGET = (1024, 512)
+        cfg.TRAIN.INFO_TARGET = str(project_root / 'advent/dataset/cityscapes_list/info.json')
+
+        cfg.TEST.INPUT_SIZE_TARGET = (1024, 512)
+        cfg.TEST.OUTPUT_SIZE_TARGET = (2048, 1024)
+        cfg.TEST.INFO_TARGET = str(project_root / 'advent/dataset/cityscapes_list/info.json')
+
+    elif cfg.TARGET == 'BDD':
+        cfg.DATA_LIST_TARGET = str(project_root / 'advent/dataset/compound_list/{}.txt')
+        cfg.DATA_DIRECTORY_TARGET = str(project_root / 'data/bdd/Compound')
+        cfg.EXP_ROOT = project_root / 'experiments'
+        cfg.EXP_ROOT_SNAPSHOT = osp.join(cfg.EXP_ROOT, 'snapshots')
+        cfg.EXP_ROOT_LOGS = osp.join(cfg.EXP_ROOT, 'logs')
+        cfg.TRAIN.INPUT_SIZE_TARGET = (960, 540)
+        cfg.TRAIN.INFO_TARGET = str(project_root / 'advent/dataset/compound_list/info.json')
+
+    else:
+        raise NotImplementedError(f"Not yet supported {cfg.TARGET} dataset")
+
+
     # auto-generate exp name if not specified
     if cfg.EXP_NAME == '':
-        cfg.EXP_NAME = f'{cfg.SOURCE}2{cfg.TARGET}_{cfg.TRAIN.MODEL}_{cfg.TRAIN.DA_METHOD}'
+        cfg.EXP_NAME = f'{cfg.SOURCE}2{cfg.TARGET}_{cfg.TRAIN.MODEL}_{cfg.TRAIN.DA_METHOD}_{cfg.TRAIN.OCDA_METHOD}'
 
     if args.exp_suffix:
         cfg.EXP_NAME += f'_{args.exp_suffix}'
@@ -71,6 +160,7 @@ def main():
             cfg.TRAIN.TENSORBOARD_VIZRATE = args.viz_every_iter
     else:
         cfg.TRAIN.TENSORBOARD_LOGDIR = ''
+
     print('Using config:')
     pprint.pprint(cfg)
 
@@ -89,7 +179,6 @@ def main():
         return
 
     # LOAD SEGMENTATION NET
-    assert osp.exists(cfg.TRAIN.RESTORE_FROM), f'Missing init model {cfg.TRAIN.RESTORE_FROM}'
     if cfg.TRAIN.MODEL == 'DeepLabv2':
         model = get_deeplab_v2(num_classes=cfg.NUM_CLASSES, multi_level=cfg.TRAIN.MULTI_LEVEL)
         saved_state_dict = torch.load(cfg.TRAIN.RESTORE_FROM)
@@ -102,15 +191,38 @@ def main():
             model.load_state_dict(new_params)
         else:
             model.load_state_dict(saved_state_dict)
+    elif cfg.TRAIN.MODEL == 'DeepLabv2_VGG':
+        model = get_deeplab_v2_vgg(cfg=cfg, num_classes=cfg.NUM_CLASSES,pretrained_model=cfg.TRAIN_VGG_PRE_MODEL)
+
+        if cfg.TRAIN.SELF_TRAINING:
+            path = osp.join(cfg.EXP_ROOT_SNAPSHOT, cfg.TRAIN.RESTORE_FROM_SELF)
+            saved_state_dict = torch.load(path)
+            model.load_state_dict(saved_state_dict, strict=False)
+            trg_list = cfg.DATA_LIST_TARGET_ORDER
+            print("self-training model loaded: {} ".format(path))
+        else:
+            trg_list = cfg.DATA_LIST_TARGET
     else:
         raise NotImplementedError(f"Not yet supported {cfg.TRAIN.MODEL}")
+
+    print("model: ")
+    print(model)
     print('Model loaded')
 
-    # DATALOADERS
+    ########  DATALOADERS  ########
+    # GTA5: 24,966: 274,626 / 24,966 = 11 epoch
+
+    # self-training : target data shuffle
+    shuffle = cfg.TRAIN.SHUFFLE
+    if cfg.TRAIN.SELF_TRAINING:
+        max_iteration = None
+    else:
+        max_iteration = cfg.TRAIN.MAX_ITERS * cfg.TRAIN.BATCH_SIZE_SOURCE
+
     source_dataset = GTA5DataSet(root=cfg.DATA_DIRECTORY_SOURCE,
                                  list_path=cfg.DATA_LIST_SOURCE,
                                  set=cfg.TRAIN.SET_SOURCE,
-                                 max_iters=cfg.TRAIN.MAX_ITERS * cfg.TRAIN.BATCH_SIZE_SOURCE,
+                                 max_iters=max_iteration,
                                  crop_size=cfg.TRAIN.INPUT_SIZE_SOURCE,
                                  mean=cfg.TRAIN.IMG_MEAN)
     source_loader = data.DataLoader(source_dataset,
@@ -119,20 +231,37 @@ def main():
                                     shuffle=True,
                                     pin_memory=True,
                                     worker_init_fn=_init_fn)
-
-    target_dataset = CityscapesDataSet(root=cfg.DATA_DIRECTORY_TARGET,
-                                       list_path=cfg.DATA_LIST_TARGET,
-                                       set=cfg.TRAIN.SET_TARGET,
-                                       info_path=cfg.TRAIN.INFO_TARGET,
-                                       max_iters=cfg.TRAIN.MAX_ITERS * cfg.TRAIN.BATCH_SIZE_TARGET,
-                                       crop_size=cfg.TRAIN.INPUT_SIZE_TARGET,
-                                       mean=cfg.TRAIN.IMG_MEAN)
-    target_loader = data.DataLoader(target_dataset,
-                                    batch_size=cfg.TRAIN.BATCH_SIZE_TARGET,
-                                    num_workers=cfg.NUM_WORKERS,
-                                    shuffle=True,
-                                    pin_memory=True,
-                                    worker_init_fn=_init_fn)
+    if cfg.TARGET == "BDD":
+        # GTA5: 14,697: 264,546 / 14,697 = 18 epoch
+        target_dataset = BDDdataset(root=cfg.DATA_DIRECTORY_TARGET,
+                                           list_path=trg_list,
+                                           set=cfg.TRAIN.SET_TARGET,
+                                           info_path=cfg.TRAIN.INFO_TARGET,
+                                           max_iters=max_iteration,
+                                           crop_size=cfg.TRAIN.INPUT_SIZE_TARGET,
+                                           mean=cfg.TRAIN.IMG_MEAN)
+        target_loader = data.DataLoader(target_dataset,
+                                        batch_size=cfg.TRAIN.BATCH_SIZE_TARGET,
+                                        num_workers=cfg.NUM_WORKERS,
+                                        shuffle=shuffle,
+                                        pin_memory=True,
+                                        worker_init_fn=_init_fn)
+    elif cfg.TARGET == 'Cityscapes':
+        target_dataset = CityscapesDataSet(root=cfg.DATA_DIRECTORY_TARGET,
+                                           list_path=cfg.DATA_LIST_TARGET,
+                                           set=cfg.TRAIN.SET_TARGET,
+                                           info_path=cfg.TRAIN.INFO_TARGET,
+                                           max_iters=cfg.TRAIN.MAX_ITERS * cfg.TRAIN.BATCH_SIZE_TARGET,
+                                           crop_size=cfg.TRAIN.INPUT_SIZE_TARGET,
+                                           mean=cfg.TRAIN.IMG_MEAN)
+        target_loader = data.DataLoader(target_dataset,
+                                        batch_size=cfg.TRAIN.BATCH_SIZE_TARGET,
+                                        num_workers=cfg.NUM_WORKERS,
+                                        shuffle=True,
+                                        pin_memory=True,
+                                        worker_init_fn=_init_fn)
+    else:
+        raise NotImplementedError(f"Not yet supported {cfg.TARGET} datasets")
 
     with open(osp.join(cfg.TRAIN.SNAPSHOT_DIR, 'train_cfg.yml'), 'w') as yaml_file:
         yaml.dump(cfg, yaml_file, default_flow_style=False)

@@ -18,19 +18,21 @@ from advent.utils.serialization import yaml_load
 cfg = EasyDict()
 
 # COMMON CONFIGS
-cfg.GAN = 'lsgan' # {gan, lsgan}
 # source domain
 cfg.SOURCE = 'GTA'
 # target domain
-cfg.TARGET = 'BDD'
+cfg.TARGET = 'Cityscapes'
 # Number of workers for dataloading
 cfg.NUM_WORKERS = 4
 # List of training images
 cfg.DATA_LIST_SOURCE = str(project_root / 'advent/dataset/gta5_list/{}.txt')
 cfg.DATA_LIST_TARGET = str(project_root / 'advent/dataset/compound_list/{}.txt')
+cfg.DATA_LIST_TARGET_ORDER = str(project_root / 'advent/dataset/compound_order/{}.txt')
 # Directories
-cfg.DATA_DIRECTORY_SOURCE = str(project_root / 'data/GTA5')
-cfg.DATA_DIRECTORY_TARGET = str(project_root / 'data/bdd/Compound')
+cfg.DATA_DIRECTORY_SOURCE = '/media/user/cce7e2c9-8e98-4a23-9dcd-45a1cb9902c2/inkyu/ADVENT/data/GTA5'
+cfg.DATA_DIRECTORY_TARGET = '/media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/GDWCT_Folder/BASELINE/ADVENT/data/Compound'
+cfg.DATA_DIRECTORY_TARGET2 = '/media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/GDWCT_Folder/BASELINE/ADVENT/data/Compound_aug1'
+cfg.DATA_DIRECTORY_TARGET3 = '/media/user/a9755522-b17e-4bde-96f6-088bbbc3a1401/GDWCT_Folder/BASELINE/ADVENT/data/Compound_aug2'
 # Number of object classes
 cfg.NUM_CLASSES = 19
 # Exp dirs
@@ -49,16 +51,19 @@ cfg.TRAIN.BATCH_SIZE_SOURCE = 1
 cfg.TRAIN.BATCH_SIZE_TARGET = 1
 cfg.TRAIN.IGNORE_LABEL = 255
 cfg.TRAIN.INPUT_SIZE_SOURCE = (1280, 720)
-cfg.TRAIN.INPUT_SIZE_TARGET = (960, 540) # cityscape (1024, 512)   # BDD (960, 540)
-# cfg.TRAIN.INPUT_SIZE_TARGET = (1024, 512) # cityscape (1024, 512)   # BDD (960, 540)
-cfg.TRAIN_VGG_PRE_MODEL = str(project_root / 'pretrained_models/vgg_model.pth')
+cfg.TRAIN.INPUT_SIZE_TARGET = (960, 540)
+cfg.TRAIN_VGG_PRE_MODEL = str(project_root / 'advent/pretrained_models/vgg_model.pth')
+
 # Class info
 cfg.TRAIN.INFO_SOURCE = ''
-cfg.TRAIN.INFO_TARGET = str(project_root / 'advent/dataset/compound_list/info.json')
+cfg.TRAIN.INFO_TARGET = str(project_root / 'advent/dataset/cityscapes_list/info.json')
 # Segmentation network params
-cfg.TRAIN.MODEL = 'DeepLabv2'
+cfg.TRAIN.MODEL = 'DeepLabv2_VGG'
 cfg.TRAIN.MULTI_LEVEL = True
+cfg.TRAIN.SHUFFLE = True
+cfg.TRAIN.SELF_TRAINING = False
 cfg.TRAIN.RESTORE_FROM = ''
+cfg.TRAIN.RESTORE_FROM_SELF = ''
 cfg.TRAIN.IMG_MEAN = np.array((104.00698793, 116.66876762, 122.67891434), dtype=np.float32)
 cfg.TRAIN.LEARNING_RATE = 2.5e-4
 cfg.TRAIN.MOMENTUM = 0.9
@@ -68,17 +73,9 @@ cfg.TRAIN.LAMBDA_SEG_MAIN = 1.0
 cfg.TRAIN.LAMBDA_SEG_AUX = 0.1  # weight of conv4 prediction. Used in multi-level setting.
 # Domain adaptation
 cfg.TRAIN.DA_METHOD = 'AdvEnt'
-
-# Boundary adaptation
-cfg.TRAIN.LAMBDA_BOUNDARY = 0.5   # weight of boundary classification
-cfg.TRAIN.LAMBDA_DICE = 1   # weight of DICE (scale BCE vs 0.2 * DICE)
-cfg.TRAIN.BOUNDARY_LOSS = "BCE"  #  [ "BCE", "DICE", "BCE+DICE" ]
-cfg.TRAIN.LAMBDA_ADV_BOUNDARY = 0.002
-
 # Adversarial training params
 cfg.TRAIN.LEARNING_RATE_D = 1e-4
-cfg.TRAIN.LAMBDA_ADV_MAIN = 0.01  # LS-GAN
-# cfg.TRAIN.LAMBDA_ADV_MAIN = 0.001 # VANILLA GAN
+cfg.TRAIN.LAMBDA_ADV_MAIN = 0.001
 cfg.TRAIN.LAMBDA_ADV_AUX = 0.0002
 # MinEnt params
 cfg.TRAIN.LAMBDA_ENT_MAIN = 0.001
@@ -91,16 +88,6 @@ cfg.TRAIN.SNAPSHOT_DIR = ''
 cfg.TRAIN.RANDOM_SEED = 1234
 cfg.TRAIN.TENSORBOARD_LOGDIR = ''
 cfg.TRAIN.TENSORBOARD_VIZRATE = 100
-
-# OCDA
-cfg.TRAIN.OCDA_METHOD = 'baseline'  # [ boundary, selfTrain ]
-cfg.TRAIN.OPTION = ''
-
-# Self training
-cfg.TRAIN.SELF_TRAINING = False
-cfg.TRAIN.SHUFFLE = True
-cfg.TRAIN.RESTORE_FROM_SELF = 'GTA2BDD_DeepLabv2_VGG_AdapSeg_baseline_lsgan/model_62000.pth'
-cfg.DATA_LIST_TARGET_ORDER = str(project_root / 'advent/dataset/compound_order/{}.txt')
 
 # TEST CONFIGS
 cfg.TEST = EasyDict()
@@ -117,12 +104,9 @@ cfg.TEST.SNAPSHOT_MAXITER = 120000  # used in 'best' mode
 # Test sets
 cfg.TEST.SET_TARGET = 'val'
 cfg.TEST.BATCH_SIZE_TARGET = 1
-cfg.TEST.INPUT_SIZE_TARGET = (960, 540)  # cityscape (1024, 512)   # BDD (960, 540)
-cfg.TEST.OUTPUT_SIZE_TARGET = (1280, 720)   # cityscape (2048, 1024)   # BDD (960, 540)
-cfg.TEST.INFO_TARGET = str(project_root / 'advent/dataset/compound_list/info.json')
-# cfg.TEST.INPUT_SIZE_TARGET = (1024, 512)
-# cfg.TEST.OUTPUT_SIZE_TARGET = (2048, 1024)
-# cfg.TEST.INFO_TARGET = str(project_root / 'advent/dataset/cityscapes_list/info.json')
+cfg.TEST.INPUT_SIZE_TARGET = (960, 540)
+cfg.TEST.OUTPUT_SIZE_TARGET = (1280, 720)
+cfg.TEST.INFO_TARGET = str(project_root / 'advent/dataset/cityscapes_list/info.json')
 cfg.TEST.WAIT_MODEL = True
 
 

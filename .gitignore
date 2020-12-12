@@ -25,6 +25,11 @@ wheels/
 *.egg
 MANIFEST
 
+# results / data / pretrained_models
+/experiments
+/data
+/pretrained_models
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -103,3 +108,11 @@ venv.bak/
 # mypy
 .mypy_cache/
 .idea/
+
+/advent/scripts/log/
+/advent/scripts/log_G2C/
+/image/
+/gt/
+/experiments_G2C/
+/gt_only_things/
+/advent_selfTraining/pretrained_models/

@@ -1,0 +1,9 @@
+SOURCE: GTA
+TARGET: BDD
+NUM_WORKERS: 4
+TRAIN:
+  OCDA_METHOD: baseline
+  DA_METHOD: source_only
+  MODEL: DeepLabv2_VGG
+TEST:
+  MODE: best
